@@ -17,6 +17,11 @@ const routes = [
     name:"Hello",
     component: () => import('../views/hello/index.vue')
   },
+  {
+    path: "/todo",
+    name:"Todo",
+    component: () => import('../views/todo/index.vue')
+  },
 //   /**
 //    * 子路由示例
 //    */
