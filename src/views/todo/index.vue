@@ -5,31 +5,28 @@
         <a-input-search v-model:value="addTitle" placeholder="input search text" enter-button="Search" size="large"
             @search="onSearch" />
         <a-table :dataSource="dataSource" :columns="columns" :pagination="false">
-            <template #bodyCell="{ column, record }">
+            <template #bodyCell="{ column, record,index }">
                 <template v-if="column.key === 'operation'">
-                    <a @click="onEdit(record.key)">编辑</a>
+                    <a @click="onEdit(record)">编辑</a>
                     <a-divider type="vertical" />
 
-                    <a @click="onDelete(record.key)">delete</a>
+                    <a @click="onDelete(record.key,index)">delete</a>
                 </template>
             </template>
         </a-table>
-        <a-modal v-model:open="open" title="编辑" centered :maskClosable="false" @cancel="cancel">
-            <a-input v-model:value="title" placeholder="Basic usage" />
-            <template #footer>
-                <a-button key="submit" type="primary" @click="onUpdateName()">确定</a-button>
-
-            </template>
-        </a-modal>
+        <Modal ref="child" @updateOpen="toggleModal" :open = "open">
+        </Modal>
     </a-col>
 </template>
 
 <script setup lang="ts">
 import { ref } from "@vue/runtime-core";
+import Modal from "../todo/component/Modal.vue"
 const open = ref<boolean>(false);
-const title = ref<string>('');
 const addTitle = ref<string>('');
 const currentKey = ref<string>('');
+    const currentObj = ref();
+    const child = ref<InstanceType<typeof Modal>>()
 const dataSource = ref([
     {
         key: '1',
@@ -59,29 +56,33 @@ const columns = [
         width: 180,
     }
 ]
-const onDelete = (key: string) => {
-    dataSource.value = dataSource.value.filter(item => item.key !== key);
+const onDelete = (key: string, index: number) => {
+    dataSource.value.splice(index,1);
 };
-const onEdit = (key) => {
-    currentKey.value = key;
-    open.value = true;
+const onEdit = (record) => {
+    currentObj.value = record;
+    open.value = !open.value;
+    if(child.value){
+        child.value.updateName(record.name);
+    }
+    
+};
+const toggleModal = (changeName :string) => {
+    console.log(2)
+    open.value = !open.value;
+    currentObj.value.name = changeName;
 };
 const onSearch = (addTitle: string) => {
-    dataSource.value.push({ key: dataSource.value.length + 1, name: addTitle })
+    dataSource.value.push({ key: (dataSource.value.length + 1).toString(), name: addTitle })
 };
-const onUpdateName = () => {
-    console.log(currentKey.value)
-    open.value = false;
-    // 使用 findIndex 方法找到对象在数组中的索引
-    var foundIndex = dataSource.value.findIndex(item => item.key === currentKey.value);
-    console.log(foundIndex)
-    // 根据索引更新数组中的对象
-    dataSource.value[foundIndex].name = title.value;
-    title.value = '';
-};
-const cancel = () => {
-    open.value = false;
-};
+// const onUpdateName = () => {
+//     open.value = false;
+
+//     // 根据索引更新数组中的对象
+//     currentObj.value.name = title.value;
+//     title.value = '';
+// };
+
 </script>
 <style>
 .title {
